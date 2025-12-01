@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body id="bodyarea">
+    <h1 id="title"></h1>
+   <p id = 'para'>hello</p>
+   <h2>click the btn to change the img</h2>
+   <img src="teddy.jpg" alt="no img" id="image" width="100">
+   <button onclick="changeimg()">clike me</button>
+   <div id="box">
+     
+   </div>
+
+   <input type='number' placeholder="enter your no" id="num1">
+   <input type="number" placeholder="enter your no" id="num2">
+   <button onclick="add()">Add</button>
+
+   <h2 id="res">Result:</h2>
+
+   <h3>click the btn to change the bg</h3>
+   <button onclick="chnagebg()">click Me</button>
+
+   <button onclick="changecolor('yellow')">Yellow</button>
+   <button onclick="changecolor('red')">Red</button>
+   <button onclick="changecolor('blue')">blue</button>
+   <button onclick="changecolor('orange')">orange</button>
+   <button onclick="changecolor('black')">black</button>
+
+   <input type="text" placeholder="enter your name" id="username">
+   <button onclick="greetuser()">Submit</button>
+   <h1 id="greeting"></h1>
+
+   <h3>click to add a new paragraph</h3>
+   <button onclick="para()">Add para</button>
+   <div id="container">
+   
+   </div>
+
+   <h1 id="rem">this is remove content</h1>
+   <button onclick="removeh1()">remove</button>
+
+
+
+    <script>
+      function removeh1(){
+         const  removecontent = document.getElementById('rem')
+         removecontent.remove()
+      }
+
+      function para(){
+        const newpara = document.createElement('p')
+        newpara.innerHTML = 'this is a new paragraph element'
+        newpara.style.color = 'red'
+        document.getElementById('container').appendChild(newpara)
+
+          
+      }
+
+
+
+      function greetuser(){
+       const name = document.getElementById('username').value
+       greeting.innerHTML = `<span style = "color:blue" > hello ${name}`
+
+      }
+
+      function changecolor(color){
+         document.getElementById('bodyarea').style.backgroundColor = color
+      }
+
+      function chnagebg(){
+         const colors = ['red','blue','lightblue','aqua','brown']
+        const randomcolors =  colors[Math.floor(Math.random()*colors.length)]
+         document.getElementById('bodyarea').style.backgroundColor = randomcolors
+
+      }
+
+      function add(){
+       const add1 =  Number(document.getElementById('num1').value)
+       const add2 = Number(document.getElementById('num2').value)
+
+       const sum = add1-add2
+       document.getElementById('res').innerHTML = sum
+
+
+      }
+      // document.getElementById('title').innerHTML = 'welcome to js'
+        const head = document.getElementById('title')
+       head.innerHTML = 'welcome to js' 
+/* 
+       document.getElementById('para').style.color = "red"
+       document.body.style.backgroundColor = 'blue' */
+
+       function changeimg(){
+          const images = document.getElementById('image')
+          images.src ='strawberry.png'
+       }
+
+       document.getElementById('box').innerHTML = "<h1>helo from js</h1>"
+
+    </script>
+
+</body>
+</html>

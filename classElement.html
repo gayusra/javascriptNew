@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p class="mytext">Hello</p>
+<p class="mytext">Welcome</p>
+<p class="mytext">Students</p>
+
+<button id="btn">Change Text</button>
+
+<div class="box">Box 1</div>
+<div class="box">Box 2</div>
+<div class="box">Box 3</div>
+
+<button onclick="highlight()">Highlight Boxes</button>
+
+<!-- Count number of elements with a class -->
+
+<p class="note">Note A</p>
+<p class="note">Note B</p>
+<p class="note">Note B</p>
+<p class="note">Note B</p>
+
+
+<button onclick="countNotes()">Count Notes</button>
+<p id="result"></p>
+
+
+
+<script>
+    document.getElementById("btn").addEventListener("click", function () {
+    let items = document.getElementsByClassName("mytext");
+
+    // Change text color for all items
+    for (let i = 0; i < items.length; i++) {
+        items[i].style.color = "red";
+    }
+});
+
+function highlight(){
+    let boxes = document.getElementsByClassName("box");
+    for(let b of boxes){
+        b.style.background = "yellow";
+        b.style.padding = "10px";
+        b.style.border = "1px solid black";
+    }
+}
+
+function countNotes() {
+    let notes = document.getElementsByClassName("note");
+    document.getElementById("result").innerText =
+        "Total Notes: " + notes.length;
+}
+
+
+</script>
+    
+</body>
+</html>
+
+<!-- document.getElementsByClassName() is a JavaScript DOM method used to select HTML elements by their class name. 
+  What it returns
+
+It returns an HTMLCollection (looks like an array but not exactly an array).
+
+It contains all elements that match the given class name. 
+
+-->

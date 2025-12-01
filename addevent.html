@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="myBtn">Click Me</button>
+    <p id="msg"></p>
+    <button id="colorbtn">change color</button>
+
+
+    <button id="toggle">show/hide</button>
+    <p id="para">hello students!</p>
+
+    <input id="username" placeholder="Type your name">
+     <p id="preview">   </p>
+
+     <div id="box" style="width:150px;height:150px;background:yellow;">
+        
+     </div>
+     <h2 id="text"></h2>
+
+<script>
+
+    const box = document.getElementById("box");
+
+box.addEventListener("mouseover", () => {
+  box.style.background = "orange";
+});
+
+box.addEventListener('click',()=>{
+    document.getElementById('text').innerHTML = 'hi welcome'
+})
+
+box.addEventListener("mouseout", () => {
+  box.style.background = "yellow";
+});
+
+   document.getElementById("username").addEventListener("keyup", function() {
+  document.getElementById("preview").innerText = this.value;
+}); 
+    let toggle  = document.getElementById("toggle")
+    let paras = document.getElementById('para')
+
+    toggle.addEventListener('click',()=>{
+        if(paras.style.display === 'none'){
+            paras.style.display = 'block'
+        }else{
+            paras.style.display = 'none'
+        } 
+    })
+
+   
+    
+  /*   document.getElementById("myBtn").addEventListener("click", function() {
+    document.getElementById("msg").innerText = "Button was clicked!";
+  });
+ */
+//Multiple Events on Same Element
+let btn = document.getElementById("myBtn");
+
+/* btn.addEventListener("click", () => console.log("Clicked")); */
+btn.addEventListener('dblclick',() => console.log("dbl click"))
+btn.addEventListener('mouseover', () => console.log("Mouse Over"));
+
+document.getElementById("colorbtn").addEventListener('click',() =>{
+   document.body.style.backgroundColor = 'red'
+})
+
+
+
+
+
+</script>
+</body>
+</html>

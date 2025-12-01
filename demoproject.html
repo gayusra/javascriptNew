@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <!--show/hide-->
+    <p id="para">hello students!</p>
+    <button onclick="toggletext()">show/hide</button>
+
+    <script>
+        function toggletext(){
+            let para = document.getElementById('para')
+
+            if(para.style.display === 'none'){
+                para.style.display = 'block'
+            }
+            else{
+                para.style.display = 'none'
+            }
+               
+        }
+    </script>
+
+<!--     <h1 id="count">0</h1>
+    <button onclick="increase()">increase</button>
+
+   <script>
+    let number = 0
+
+     function increase(){
+         number ++
+         document.getElementById('count').innerText = number
+     }
+
+   </script> -->
+
+   <input type="text" id="task" placeholder="enter task">
+   <button onclick="addtask()">Add Task</button>
+
+   <ul id="tasklist">
+  
+   </ul>
+
+   <script>
+     function addtask(){
+        let input = document.getElementById('task').value
+
+        if(input === '') return
+
+        let li = document.createElement('li')
+        li.innerText = input
+
+        document.getElementById('tasklist').appendChild(li)
+        document.getElementById('task').value = ''
+     }
+   </script>
+
+   <h2>simple calculator</h2>
+
+   <input type="number" id="num1" placeholder="enter first number">
+   <input type="number" id="num2" placeholder="enter second number">
+   <button onclick="add()">Add</button>
+   <button onclick="sub()">sub</button>
+   <button>Mulitiply</button>
+   <button>Divide</button>
+
+   <h1>Result: <span id="result">0</span></h1>
+
+   <script>
+    function add(){
+        let a = Number(document.getElementById('num1').value)
+        let b = Number(document.getElementById('num2').value)
+
+        document.getElementById('result').innerText = a+b
+        
+    }
+
+    function sub(){
+        let a = Number(document.getElementById('num1').value)
+        let b = Number(document.getElementById('num2').value)
+
+        document.getElementById('result').innerText = a-b
+    }
+   </script>
+   </body> 
+</html>
