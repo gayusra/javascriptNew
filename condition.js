@@ -1,5 +1,5 @@
 
- /*let rain = true
+ let rain = false
 
 if(rain){
     console.log('rain is coming so you take umberlla')
@@ -7,17 +7,17 @@ if(rain){
     console.log('weather is so hot')
 }
 
-let num = '5'
+/* let num = '3'
 
 if(num == 5){
     console.log('yes! is equal')
 }else{
     console.log('its not equal')
-}
+} */
 
 let gt = 10
 
-if(gt>10){
+if(gt>=10){
     console.log('yes')
 }
 else{
@@ -29,7 +29,8 @@ const name = 'gayu'
 if(name=='banu'){
     console.log('yes verifed')
 }else{
-    console.log('no not verified')*/
+    console.log('no not verified')
+}
 
 
 //multiple condition using - else if condition
