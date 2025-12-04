@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Registration Form</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f7;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 450px;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb;
+      border-radius: 5px;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    textarea {
+      resize: none;
+      height: 70px;
+    }
+
+    .error {
+      color: #d93025;
+      font-size: 14px;
+      margin-top: 3px;
+    }
+
+    .success {
+      color: green;
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      background: #4A90E2;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #357ABD;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>Student Registration Form</h2>
+
+  <form id="regForm">
+
+    <!-- NAME -->
+    <label>Name</label>
+    <input type="text" id="name">
+    <div id="nameError" class="error"></div>
+
+    <!-- EMAIL -->
+    <label>Email</label>
+    <input type="text" id="email">
+    <div id="emailError" class="error"></div>
+
+    <!-- PHONE -->
+    <label>Phone Number</label>
+    <input type="text" id="phone">
+    <div id="phoneError" class="error"></div>
+
+    <!-- AGE -->
+    <label>Age</label>
+    <input type="number" id="age">
+    <div id="ageError" class="error"></div>
+
+    <!-- GENDER -->
+    <label>Gender</label>
+    <select id="gender">
+      <option value="">Select gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+    <div id="genderError" class="error"></div>
+
+    <!-- COURSE -->
+    <label>Course</label>
+    <select id="course">
+      <option value="">Select course</option>
+      <option value="UI/UX Design">UI/UX Design</option>
+      <option value="Full Stack Development">Full Stack Development</option>
+      <option value="Data Analytics">Data Analytics</option>
+      <option value="Python Programming">Python Programming</option>
+    </select>
+    <div id="courseError" class="error"></div>
+
+    <!-- ADDRESS -->
+    <label>Address</label>
+    <textarea id="address"></textarea>
+    <div id="addressError" class="error"></div>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <p id="successMsg" class="success"></p>
+
+</div>
+
+<script>
+  document.getElementById("regForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    // Get values
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+    let age = document.getElementById("age").value.trim();
+    let gender = document.getElementById("gender").value;
+    let course = document.getElementById("course").value;
+    let address = document.getElementById("address").value.trim();
+
+    // Error fields
+    let nameError = document.getElementById("nameError");
+    let emailError = document.getElementById("emailError");
+    let phoneError = document.getElementById("phoneError");
+    let ageError = document.getElementById("ageError");
+    let genderError = document.getElementById("genderError");
+    let courseError = document.getElementById("courseError");
+    let addressError = document.getElementById("addressError");
+    let successMsg = document.getElementById("successMsg");
+
+    // Reset errors
+    nameError.innerText = "";
+    emailError.innerText = "";
+    phoneError.innerText = "";
+    ageError.innerText = "";
+    genderError.innerText = "";
+    courseError.innerText = "";
+    addressError.innerText = "";
+    successMsg.innerText = "";
+
+    let valid = true;
+
+    // Name Validation
+    if (name === "") {
+      nameError.innerText = "Name is required";
+      valid = false;
+    }
+
+    // Email Validation
+    let emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (email === "") {
+      emailError.innerText = "Email is required";
+      valid = false;
+    } else if (!email.match(emailPattern)) {
+      emailError.innerText = "Enter a valid email";
+      valid = false;
+    }
+
+    // Phone Validation
+    let phonePattern = /^[0-9]{10}$/;
+    if (phone === "") {
+      phoneError.innerText = "Phone number is required";
+      valid = false;
+    } else if (!phone.match(phonePattern)) {
+      phoneError.innerText = "Phone must be 10 digits";
+      valid = false;
+    }
+
+    // Age Validation
+    if (age === "") {
+      ageError.innerText = "Age is required";
+      valid = false;
+    } else if (age < 10 || age > 100) {
+      ageError.innerText = "Age must be between 10 and 100";
+      valid = false;
+    }
+
+    // Gender Validation
+    if (gender === "") {
+      genderError.innerText = "Please select gender";
+      valid = false;
+    }
+
+    // Course Validation
+    if (course === "") {
+      courseError.innerText = "Please select a course";
+      valid = false;
+    }
+
+    // Address Validation
+    if (address === "") {
+      addressError.innerText = "Address is required";
+      valid = false;
+    }
+
+    // Success message
+    if (valid) {
+      successMsg.innerText = "Registration Successful!";
+    }
+  });
+</script>
+
+</body>
+</html>
