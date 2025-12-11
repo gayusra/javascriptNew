@@ -1,0 +1,64 @@
+/* Basic navbar style */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #222;
+  color: white;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* Nav links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+/* Hide menu icon on desktop */
+.menu-icon {
+  display: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links {
+    position: absolute;
+    right: 0;
+    top: 60px;
+    background: #333;
+    width: 200px;
+    height: 0;
+    overflow: hidden;
+    flex-direction: column;
+    gap: 0;
+    transition: 0.3s;
+  }
+
+  .nav-links li {
+    padding: 15px;
+    border-bottom: 1px solid #444;
+  }
+
+  .menu-icon {
+    display: block;
+  }
+
+  /* When active class added */
+  .nav-links.active {
+    height: 200px; /* enough space for menu items */
+  }
+}

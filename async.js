@@ -20,7 +20,7 @@ async function demo() {
 demo().then(result => console.log(result));
 
 //Example with await (Wait for a Promise)
-function getData() {
+/* function getData() {
   return new Promise(resolve => {
     setTimeout(() => resolve("Data Loaded"), 2000);
   });
@@ -32,7 +32,7 @@ async function showData() {
   console.log(result);
 }
 
-showData();
+showData(); */
 
 /* Real-World Example: Fetch API */
 async function fetchUsers() {

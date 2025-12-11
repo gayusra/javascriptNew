@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand-Controlled 3D Green Apple Particles</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000428 50%, #000000 100%);
+            font-family: sans-serif;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #ff00ff;
+            pointer-events: none;
+            opacity: 0.9;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff00ff;
+            z-index: 100;
+        }
+
+        #handInfo {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            color: #00ff88;
+            font-size: 16px;
+            pointer-events: none;
+            text-shadow: 0 0 8px #00ff88;
+            font-weight: bold;
+        }
+
+        #videoContainer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 220px;
+            height: 165px;
+            border: 3px solid #ff0080;
+            border-radius: 15px;
+            overflow: hidden;
+            opacity: 0.85;
+            box-shadow: 0 0 20px #ff0080;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            100% { transform: scale(1.1) rotate(1deg); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    
+    <div id="info">🍏 Move hands to control the GREEN APPLE PARTICLES! 🍏</div>
+    <div id="handInfo">👋 Hands: <span id="handCount">0</span></div>
+    <div id="videoContainer">
+        <video id="webcam" autoplay playsinline style="width:100%; height:100%; transform: scaleX(-1);"></video>
+    </div>
+    <canvas id="webgl"></canvas>
+
+    <!-- Three.js ES Module -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 1. SETUP SCENE ---
+        const canvas = document.querySelector('#webgl');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0a2e, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+        );
+        camera.position.z = 6;
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // --- 2. GREEN APPLE PARTICLES (many sprites using Points) ---
+        const particlesCount = 2000;
+        const positions = new Float32Array(particlesCount * 3);
+        const velocities = new Float32Array(particlesCount * 3);
+        const sizes = new Float32Array(particlesCount);
+
+        for (let i = 0; i < particlesCount; i++) {
+            const i3 = i * 3;
+
+            // random start position in a cube
+            positions[i3]     = (Math.random() - 0.5) * 10;
+            positions[i3 + 1] = (Math.random() - 0.5) * 6;
+            positions[i3 + 2] = (Math.random() - 0.5) * 8;
+
+            // random small velocity
+            velocities[i3]     = (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+
+            // base size (will modulate later)
+            sizes[i] = Math.random() * 0.15 + 0.08;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const textureLoader = new THREE.TextureLoader();
+        const appleTexture = textureLoader.load('blueberry.png');
+        appleTexture.encoding = THREE.sRGBEncoding;
+
+        const material = new THREE.PointsMaterial({
+            size: 0.4,
+            map: appleTexture,
+            transparent: true,
+            alphaTest: 0.1,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            color: 0xffffff
+        });
+
+        const applePoints = new THREE.Points(geometry, material);
+        scene.add(applePoints);
+
+        // --- 3. HAND TRACKING SETUP ---
+        const handCenters = [];
+        const videoElement = document.getElementById('webcam');
+        const handCountElement = document.getElementById('handCount');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onHandsResults);
+
+        const cameraFeed = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        });
+
+        cameraFeed.start();
+
+        function onHandsResults(results) {
+            handCenters.length = 0;
+            const handCount = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+            handCountElement.textContent = handCount;
+
+            if (results.multiHandLandmarks) {
+                for (let landmarks of results.multiHandLandmarks) {
+                    let sumX = 0, sumY = 0, sumZ = 0;
+                    const palmPoints = [0, 1, 5, 9, 13, 17];
+                    for (let idx of palmPoints) {
+                        sumX += landmarks[idx].x;
+                        sumY += landmarks[idx].y;
+                        sumZ += landmarks[idx].z;
+                    }
+                    
+                    const avgX = sumX / palmPoints.length;
+                    const avgY = sumY / palmPoints.length;
+                    const avgZ = sumZ / palmPoints.length;
+
+                    handCenters.push({
+                        x: (avgX - 0.5) * 8,
+                        y: -(avgY - 0.5) * 5,
+                        z: avgZ * 4
+                    });
+                }
+            }
+        }
+
+        // --- 4. ANIMATION LOOP (3D particle behavior) ---
+        const clock = new THREE.Clock();
+
+        const tick = () => {
+            const elapsedTime = clock.getElapsedTime();
+
+            const pos = geometry.attributes.position.array;
+
+            for (let i = 0; i < particlesCount; i++) {
+                const i3 = i * 3;
+
+                // basic floating motion (sine)
+                velocities[i3]     += Math.sin(elapsedTime * 0.8 + i) * 0.0005;
+                velocities[i3 + 1] += Math.cos(elapsedTime * 0.6 + i * 1.3) * 0.0005;
+
+                // attraction to hands
+                for (const hand of handCenters) {
+                    const dx = hand.x - pos[i3];
+                    const dy = hand.y - pos[i3 + 1];
+                    const dz = -hand.z - pos[i3 + 2]; // invert z
+
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (dist > 0.1 && dist < 4.0) {
+                        const f = (4.0 - dist) * 0.015;
+                        velocities[i3]     += dx * f;
+                        velocities[i3 + 1] += dy * f;
+                        velocities[i3 + 2] += dz * f;
+                    }
+                }
+
+                // damping
+                velocities[i3]     *= 0.94;
+                velocities[i3 + 1] *= 0.94;
+                velocities[i3 + 2] *= 0.94;
+
+                // update positions
+                pos[i3]     += velocities[i3];
+                pos[i3 + 1] += velocities[i3 + 1];
+                pos[i3 + 2] += velocities[i3 + 2];
+
+                // bounds + respawn
+                const limit = 7;
+                if (Math.abs(pos[i3]) > limit || Math.abs(pos[i3 + 1]) > limit || Math.abs(pos[i3 + 2]) > limit) {
+                    pos[i3]     = (Math.random() - 0.5) * 8;
+                    pos[i3 + 1] = (Math.random() - 0.5) * 5;
+                    pos[i3 + 2] = (Math.random() - 0.5) * 6;
+                    velocities[i3] = velocities[i3 + 1] = velocities[i3 + 2] = 0;
+                }
+            }
+
+            // pulsating size (global)
+            material.size = 0.35 + Math.sin(elapsedTime * 3.0) * 0.08;
+
+            geometry.attributes.position.needsUpdate = true;
+
+            // subtle camera motion for depth
+            camera.position.x = Math.sin(elapsedTime * 0.15) * 2.5;
+            camera.position.y = Math.sin(elapsedTime * 0.1) * 1.5;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(tick);
+        };
+
+        tick();
+
+        // --- 5. RESIZE HANDLER ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,11 @@ class Person {
 }
 
 const p1 = new Person("Rahul", 22);
+const p2 = new Person("Banu",25)
+const p3 = new Person('gayu')
 p1.greet();
+p2.greet()
+p3.greet()
 
 //object
 const car = {
@@ -22,11 +26,12 @@ const car = {
   }
 };
 
+
 car.start();
 
 //Encapsulation
 
-class BankAccount {
+/* class BankAccount {
   #balance = 0;
 
   deposit(amount) {
@@ -40,6 +45,6 @@ class BankAccount {
 
 const acc = new BankAccount();
 acc.deposit(1000);
-console.log(acc.getBalance()); // 1000
+console.log(acc.getBalance()); */ // 1000
 
 

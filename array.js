@@ -1,6 +1,6 @@
-/* let city=['madurai','trichy','chennai']
+ let city=['madurai','trichy','chennai']
 console.log(city)
-console.log(city[1]) */
+console.log(city[1]) 
 
 
 let number = [1,2,3,4,5,66,88]

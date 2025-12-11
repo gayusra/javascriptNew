@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand-Controlled 3D Green Apple</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000428 50%, #000000 100%);
+            font-family: sans-serif;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #ff00ff;
+            pointer-events: none;
+            opacity: 0.9;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff00ff;
+            z-index: 100;
+        }
+
+        #handInfo {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            color: #00ff88;
+            font-size: 16px;
+            pointer-events: none;
+            text-shadow: 0 0 8px #00ff88;
+            font-weight: bold;
+        }
+
+        #videoContainer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 220px;
+            height: 165px;
+            border: 3px solid #ff0080;
+            border-radius: 15px;
+            overflow: hidden;
+            opacity: 0.85;
+            box-shadow: 0 0 20px #ff0080;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            100% { transform: scale(1.1) rotate(1deg); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    
+    <div id="info">🍏 Move hands to control the GREEN APPLE! 🍏</div>
+    <div id="handInfo">👋 Hands: <span id="handCount">0</span></div>
+    <div id="videoContainer">
+        <video id="webcam" autoplay playsinline style="width:100%; height:100%; transform: scaleX(-1);"></video>
+    </div>
+    <canvas id="webgl"></canvas>
+
+    <!-- Three.js ES Module -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 1. SETUP SCENE ---
+        const canvas = document.querySelector('#webgl');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0a2e, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+        );
+        camera.position.z = 4;
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // --- 2. LOAD GREEN APPLE IMAGE AS SPRITE (2.5D) ---
+        const textureLoader = new THREE.TextureLoader();
+        const appleTexture = textureLoader.load('green apple.png');
+        appleTexture.encoding = THREE.sRGBEncoding;
+
+        const appleMaterial = new THREE.SpriteMaterial({
+            map: appleTexture,
+            transparent: true,
+            depthWrite: false
+        });
+
+        const appleSprite = new THREE.Sprite(appleMaterial);
+        appleSprite.scale.set(2, 2, 1); // size of apple
+        scene.add(appleSprite);
+
+        // small glow plane behind apple for neon effect
+        const glowMaterial = new THREE.SpriteMaterial({
+            map: appleTexture,
+            color: new THREE.Color(0x88ff88),
+            opacity: 0.4,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+        const glowSprite = new THREE.Sprite(glowMaterial);
+        glowSprite.scale.set(2.6, 2.6, 1);
+        scene.add(glowSprite);
+
+        // --- 3. HAND TRACKING SETUP ---
+        const handCenters = [];
+        const videoElement = document.getElementById('webcam');
+        const handCountElement = document.getElementById('handCount');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onHandsResults);
+
+        const cameraFeed = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        });
+
+        cameraFeed.start();
+
+        function onHandsResults(results) {
+            handCenters.length = 0;
+            const handCount = results.multiHandLandmarks ? results.multiHandLandmarks.length : 0;
+            handCountElement.textContent = handCount;
+
+            if (results.multiHandLandmarks) {
+                for (let landmarks of results.multiHandLandmarks) {
+                    let sumX = 0, sumY = 0, sumZ = 0;
+                    const palmPoints = [0, 1, 5, 9, 13, 17];
+                    for (let idx of palmPoints) {
+                        sumX += landmarks[idx].x;
+                        sumY += landmarks[idx].y;
+                        sumZ += landmarks[idx].z;
+                    }
+                    
+                    const avgX = sumX / palmPoints.length;
+                    const avgY = sumY / palmPoints.length;
+                    const avgZ = sumZ / palmPoints.length;
+
+                    handCenters.push({
+                        x: (avgX - 0.5) * 6,
+                        y: -(avgY - 0.5) * 4,
+                        z: avgZ * 3
+                    });
+                }
+            }
+        }
+
+        // --- 4. ANIMATION LOOP FOR APPLE ---
+        const clock = new THREE.Clock();
+
+        // velocity for apple movement
+        const appleVelocity = new THREE.Vector3(0, 0, 0);
+
+        const tick = () => {
+            const elapsedTime = clock.getElapsedTime();
+
+            // base idle motion (floating)
+            const idleX = Math.sin(elapsedTime * 0.6) * 0.2;
+            const idleY = Math.cos(elapsedTime * 0.4) * 0.2;
+
+            // attraction towards first hand (if present)
+            if (handCenters.length > 0) {
+                const target = handCenters[0];
+                const desired = new THREE.Vector3(target.x, target.y, -target.z);
+                const current = appleSprite.position.clone();
+
+                const dir = desired.sub(current);
+                const distance = dir.length();
+
+                if (distance > 0.01) {
+                    dir.normalize();
+                    const strength = Math.min(distance * 0.12, 0.3);
+                    appleVelocity.addScaledVector(dir, strength);
+                }
+            }
+
+            // add idle force
+            appleVelocity.x += idleX * 0.002;
+            appleVelocity.y += idleY * 0.002;
+
+            // damping
+            appleVelocity.multiplyScalar(0.92);
+
+            // update position
+            appleSprite.position.add(appleVelocity);
+            glowSprite.position.copy(appleSprite.position);
+
+            // keep inside bounds
+            const maxRange = 4;
+            ['x', 'y', 'z'].forEach(axis => {
+                if (appleSprite.position[axis] > maxRange) {
+                    appleSprite.position[axis] = maxRange;
+                    appleVelocity[axis] *= -0.6;
+                }
+                if (appleSprite.position[axis] < -maxRange) {
+                    appleSprite.position[axis] = -maxRange;
+                    appleVelocity[axis] *= -0.6;
+                }
+            });
+
+            // 3D-like rotation (by changing sprite orientation)
+            appleSprite.material.rotation = Math.sin(elapsedTime * 1.5) * 0.6;
+            glowSprite.material.rotation = appleSprite.material.rotation;
+
+            // subtle camera orbit for depth
+            camera.position.x = Math.sin(elapsedTime * 0.1) * 2;
+            camera.position.y = Math.sin(elapsedTime * 0.07) * 1.0;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+            window.requestAnimationFrame(tick);
+        };
+
+        tick();
+
+        // --- 5. RESIZE HANDLER ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

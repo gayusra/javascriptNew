@@ -39,7 +39,7 @@ banana()
 function greetUser(name){
     console.log('Hi i am ',name)
 }
-greetUser('banu')
+greetUser('Ramya')
 
 function welcome(name1,name2){
     console.log('welcome both of you',name1,name2,'guyss')

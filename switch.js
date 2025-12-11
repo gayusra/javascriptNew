@@ -48,13 +48,13 @@ switch(day) {
     dayName = "Invalid day";
 }
 
-console.log(dayName);  */// Output: Wednesday
+console.log(dayName); */  // Output: Wednesday
 
 
 
 
     //Grade Evaluation
-let grade = "D";
+/* let grade = "y";
 
  switch(grade) {
   case "A":
@@ -75,9 +75,9 @@ let grade = "D";
   default:
     console.log("Invalid grade");
 } 
-
+ */
 //Greeting Based on Time
-let time = 17; // 14 means 2 PM
+let time = 6; // 14 means 2 PM
 
 switch(true) {
   case (time < 12):

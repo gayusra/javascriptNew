@@ -1,10 +1,10 @@
-function Person(name, age) {
+/* function Person(name, age) {
   this.name = name;
   this.age = age;
 }
 
 const p1 = new Person("Rahul", 22);
-const p2 = new Person("Priya", 20);
+const p2 = new Person("Priya", 20); */
 
 
 /* function Student(name, course) {

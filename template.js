@@ -13,10 +13,12 @@ let fname = 'ram'
 let lname = 'babu'
 let city = 'chennai'
 
-//console.log('my name is' + fname +  ' ' +  lname + 'lives in' + ' '+ city)
+console.log('my name is' + fname +  ' ' +  lname + 'lives in' + ' '+ city)
 
  let msg = `my name is ${fname} ${lname} lives in ${city}`
  console.log(msg)
+
+ 
 
  
 
